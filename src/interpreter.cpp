@@ -461,11 +461,6 @@ void do_cities(CHAR_DATA *ch, char*, int, int);
 #define MAGIC_NUM 419
 #define MAGIC_LEN 8
 
-// здесь храним коды, которые отправили игрокам на почту
-// строка - это мыло, если один чар вошел с необычного места, то блочим сразу всех чаров на этом мыле,
-// пока не введет код (или до ребута)
-std::map<std::string, int> new_loc_codes;
-
 void do_debug_queues(CHAR_DATA * /*ch*/, char *argument, int /*cmd*/, int /*subcmd*/)
 {
 	std::stringstream ss;
@@ -2743,10 +2738,8 @@ bool ValidateStats(DESCRIPTOR_DATA * d)
 
 void DoAfterPassword(DESCRIPTOR_DATA * d)
 {
-	int load_result;
-
 	// Password was correct.
-	load_result = GET_BAD_PWS(d->character);
+	const auto failed_login_attempts = GET_BAD_PWS(d->character);
 	GET_BAD_PWS(d->character) = 0;
 	d->bad_pws = 0;
 
@@ -2758,6 +2751,7 @@ void DoAfterPassword(DESCRIPTOR_DATA * d)
 		mudlog(buf, NRM, LVL_GOD, SYSLOG, TRUE);
 		return;
 	}
+
 	if (GET_LEVEL(d->character) < circle_restrict)
 	{
 		SEND_TO_Q("Игра временно приостановлена.. Ждем вас немного позже.\r\n", d);
@@ -2766,43 +2760,7 @@ void DoAfterPassword(DESCRIPTOR_DATA * d)
 		mudlog(buf, NRM, LVL_GOD, SYSLOG, TRUE);
 		return;
 	}
-	if (new_loc_codes.count(GET_EMAIL(d->character)) != 0)
-	{
-		SEND_TO_Q("\r\nВам на электронную почту был выслан код. Введите его, пожалуйста: \r\n", d);
-		STATE(d) = CON_RANDOM_NUMBER;
-		return;
-	}
-	// нам нужен массив сетей с маской /24
-	std::set<uint32_t> subnets;
 
-	struct logon_data * log_info = LOGON_LIST(d->character);
-
-	// маска сети /24, можно покрутить в большую сторону, если есть желание
-	uint32_t MASK = 16777215;
-	while (log_info)
-	{
-		uint32_t current_subnet = inet_addr(log_info->ip) & MASK;
-		subnets.insert(current_subnet);
-		log_info = log_info->next;
-	}
-	if (subnets.size() != 0)
-	{
-		if (subnets.count(inet_addr(d->host) & MASK) == 0)
-		{
-			sprintf(buf, "Персонаж %s вошел с необычного места!", GET_NAME(d->character));
-			mudlog(buf, CMP, LVL_GOD, SYSLOG, TRUE);
-			if (PRF_FLAGGED(d->character, PRF_IPCONTROL)) {
-				int random_number = number(1000000, 9999999);
-				new_loc_codes[GET_EMAIL(d->character)] = random_number;
-				std::string cmd_line =  str(boost::format("python3 send_code.py %s %d &") % GET_EMAIL(d->character) % random_number);
-				auto result = system(cmd_line.c_str());
-				UNUSED_ARG(result);
-				SEND_TO_Q("\r\nВам на электронную почту был выслан код. Введите его, пожалуйста: \r\n", d);
-				STATE(d) = CON_RANDOM_NUMBER;
-				return;
-			}
-		}
-	}
 	// check and make sure no other copies of this player are logged in
 	if (perform_dupe_check(d))
 	{
@@ -2815,15 +2773,16 @@ void DoAfterPassword(DESCRIPTOR_DATA * d)
 
 	log("%s [%s] has connected.", GET_NAME(d->character), d->host);
 
-	if (load_result)
+	if (failed_login_attempts)
 	{
 		sprintf(buf, "\r\n\r\n\007\007\007"
 				"%s%d LOGIN FAILURE%s SINCE LAST SUCCESSFUL LOGIN.%s\r\n",
-				CCRED(d->character, C_SPR), load_result,
-				(load_result > 1) ? "S" : "", CCNRM(d->character, C_SPR));
+				CCRED(d->character, C_SPR), failed_login_attempts,
+				(failed_login_attempts > 1) ? "S" : "", CCNRM(d->character, C_SPR));
 		SEND_TO_Q(buf, d);
 		GET_BAD_PWS(d->character) = 0;
 	}
+
 	time_t tmp_time = LAST_LOGON(d->character);
 	sprintf(buf, "\r\nПоследний раз вы заходили к нам в %s с адреса (%s).\r\n",
 			rustime(localtime(&tmp_time)), GET_LASTIP(d->character));
@@ -3073,7 +3032,7 @@ void nanny(DESCRIPTOR_DATA * d, char *arg)
 		d->keytable = (ubyte) * arg - (ubyte) '0';
 		ip_log(d->host);
 		SEND_TO_Q(GREETINGS, d);
-		STATE(d) = CON_GET_NAME;
+		STATE(d) = CON_GET_ACCOUNT_ID;
 		break;
 
 	case CON_GET_NAME:	// wait for input of name
@@ -3190,22 +3149,15 @@ void nanny(DESCRIPTOR_DATA * d, char *arg)
 				}
 				else  	// undo it just in case they are set
 				{
-					if (IS_IMMORTAL(d->character) || PRF_FLAGGED(d->character, PRF_CODERINFO))
-					{
-						SEND_TO_Q("Игрок с подобным именем является БЕССМЕРТНЫМ в игре.\r\n", d);
-						SEND_TO_Q("Во избежание недоразумений введите пару ИМЯ ПАРОЛЬ.\r\n", d);
-						SEND_TO_Q("Имя и пароль через пробел : ", d);
-						d->character.reset();
+					// TODO: check that this character belongs to the current account.
 
-						return;
-					}
+					return;	// bu default treat any character as not belonging to the current account.
 
 					PLR_FLAGS(d->character).unset(PLR_MAILING);
 					PLR_FLAGS(d->character).unset(PLR_WRITING);
 					PLR_FLAGS(d->character).unset(PLR_CRYO);
-					SEND_TO_Q("Персонаж с таким именем уже существует. Введите пароль : ", d);
-					d->idle_tics = 0;
-					STATE(d) = CON_PASSWORD;
+
+					DoAfterPassword(d);
 				}
 			}
 			else  	// player unknown -- make new character
@@ -3271,13 +3223,11 @@ void nanny(DESCRIPTOR_DATA * d, char *arg)
 			switch (process_auto_agreement(d))
 			{
 			case 0:	// Auto - agree
-				sprintf(buf, "Введите пароль для %s (не вводите пароли типа '123' или 'qwe', иначе ваших персонажев могут украсть) : ",
-						GET_PAD(d->character, 1));
-				SEND_TO_Q(buf, d);
-				STATE(d) = CON_NEWPASSWD;
+				// TODO: attach new player to the current account
+				STATE(d) = CON_RMOTD;
 				return;
 
-			case 1:	// Auto -disagree
+			case 1:	// Auto - disagree
 				STATE(d) = CON_CLOSE;
 				return;
 
@@ -3381,14 +3331,11 @@ void nanny(DESCRIPTOR_DATA * d, char *arg)
 		switch (process_auto_agreement(d))
 		{
 		case 0:	// Auto - agree
-			sprintf(buf,
-					"Введите пароль для %s (не вводите пароли типа '123' или 'qwe', иначе ваших персонажев могут украсть) : ",
-					GET_PAD(d->character, 1));
-			SEND_TO_Q(buf, d);
-			STATE(d) = CON_NEWPASSWD;
+			// TODO: attach new player to the current account
+			STATE(d) = CON_RMOTD;
 			return;
 
-		case 1:	// Auto -disagree
+		case 1:	// Auto - disagree
 			d->character.reset();
 			SEND_TO_Q("Выберите другое имя : ", d);
 			return;
@@ -3400,46 +3347,6 @@ void nanny(DESCRIPTOR_DATA * d, char *arg)
 		SEND_TO_Q("Ваш пол [ М(M)/Ж(F) ]? ", d);
 		STATE(d) = CON_QSEX;
 		return;
-
-	case CON_PASSWORD:	// get pwd for known player
-		/*
-		 * To really prevent duping correctly, the player's record should
-		 * be reloaded from disk at this point (after the password has been
-		 * typed).  However I'm afraid that trying to load a character over
-		 * an already loaded character is going to cause some problem down the
-		 * road that I can't see at the moment.  So to compensate, I'm going to
-		 * (1) add a 15 or 20-second time limit for entering a password, and (2)
-		 * re-add the code to cut off duplicates when a player quits.  JE 6 Feb 96
-		 */
-
-		SEND_TO_Q("\r\n", d);
-
-		if (!*arg)
-		{
-			STATE(d) = CON_CLOSE;
-		}
-		else
-		{
-			if (!Password::compare_password(d->character.get(), arg))
-			{
-				sprintf(buf, "Bad PW: %s [%s]", GET_NAME(d->character), d->host);
-				mudlog(buf, BRF, LVL_IMMORT, SYSLOG, TRUE);
-				GET_BAD_PWS(d->character)++;
-				d->character->save_char();
-				if (++(d->bad_pws) >= max_bad_pws)  	// 3 strikes and you're out.
-				{
-					SEND_TO_Q("Неверный пароль... Отсоединяемся.\r\n", d);
-					STATE(d) = CON_CLOSE;
-				}
-				else
-				{
-					SEND_TO_Q("Неверный пароль.\r\nПароль : ", d);
-				}
-				return;
-			}
-			DoAfterPassword(d);
-		}
-		break;
 
 	case CON_NEWPASSWD:
 	case CON_CHPWD_GETNEW:
@@ -3866,31 +3773,7 @@ Sventovit
 		}
 
 		do_entergame(d);
-
 		break;
-
-	case CON_RANDOM_NUMBER:
-		{
-			int code_rand = atoi(arg);
-
-			if (new_loc_codes.count(GET_EMAIL(d->character)) == 0)
-			{
-				break;
-			}
-
-			if (new_loc_codes[GET_EMAIL(d->character)] != code_rand)
-			{
-				SEND_TO_Q("\r\nВы ввели неправильный код, попробуйте еще раз.\r\n", d);
-				STATE(d) = CON_CLOSE;
-				break;
-			}
-
-			new_loc_codes.erase(GET_EMAIL(d->character));
-			add_logon_record(d);
-			DoAfterPassword(d);
-
-			break;
-		}
 
 	case CON_MENU:		// get selection from main menu
 		switch (*arg)

@@ -728,9 +728,7 @@ typedef std::list<EAffectFlag> affects_list_t;
 #define CON_CLOSE         1 // Disconnecting     //
 #define CON_GET_NAME      2 // By what name ..?     //
 #define CON_NAME_CNFRM    3 // Did I get that right, x?   //
-#define CON_PASSWORD      4 // Password:         //
-#define CON_NEWPASSWD     5 // Give me a password for x   //
-#define CON_CNFPASSWD     6 // Please retype password: //
+// ... states 4-6 are free
 #define CON_QSEX          7 // Sex?           //
 #define CON_QCLASS        8 // Class?         //
 #define CON_RMOTD         9 // PRESS RETURN after MOTD //
@@ -780,7 +778,18 @@ typedef std::list<EAffectFlag> affects_list_t;
 #define CON_MENU_STATS   53 // оплата сброса стартовых статов из главного меню
 #define CON_SEDIT        54 // sedit - редактирование сетов
 #define CON_RESET_RELIGION   55 // сброс религии из меню сброса статов
-#define CON_RANDOM_NUMBER	 56 // where player enter in the game from new location
+// ... code 56 is free
+#define CON_GET_ACCOUNT_ID	57	// get account ID (or "new" to create new account).
+#define CON_GET_NEW_ACCOUNT_ID	58	// user enters id of the new account
+#define CON_ACCOUNT_PASSWORD	59	// user enters account password (for already existing accounts)
+#define CON_GET_CONFIRMATION_CONE	60	// get confirmation code sent to email (for new accounts); 0 - to resend code.
+/* User in players menu (selecting player). From this menu user may go to:
+  - CON_ATTACH_PLAYER_GET_PASSWORD - to attach old player to the newly created account
+  - CON_GET_NAME - to create new player attached to this account
+  - CON_RMOTD - to log into game using one of the players already attached to this account
+*/
+#define CON_PLAYERS_MENU	61
+#define CON_ATTACH_PLAYER_GET_PASSWORD	62	// user selected player has not been attached to any account
 // не забываем отражать новые состояния в connected_types -- Krodo
 
 // Character equipment positions: used as index for char_data.equipment[] //
