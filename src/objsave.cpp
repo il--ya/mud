@@ -662,7 +662,7 @@ OBJ_DATA::shared_ptr read_one_object_new(char **data, int *error)
 	{
 		if (GET_OBJ_WEIGHT(object) < GET_OBJ_VAL(object, 1))
 		{
-			object->set_weight(GET_OBJ_VAL(object, 1)/10 + 5);
+			object->set_weight(GET_OBJ_VAL(object, 1) + 5);
 		}
 	}
 	// проставляем имя жидкости
@@ -870,7 +870,7 @@ OBJ_DATA::shared_ptr read_one_object(char **data, int *error)
 	{
 		if (GET_OBJ_WEIGHT(object) < GET_OBJ_VAL(object, 1))
 		{
-			object->set_weight(GET_OBJ_VAL(object, 1)/10 + 5);
+			object->set_weight(GET_OBJ_VAL(object, 1) + 5);
 		}
 	}
 
@@ -1014,6 +1014,15 @@ void write_one_object(std::stringstream &out, OBJ_DATA * object, int location)
 	// Если у шмотки есть прототип то будем сохранять по обрезанной схеме, иначе
 	// придется сохранять все статсы шмотки.
 	auto proto = get_object_prototype(GET_OBJ_VNUM(object));
+	
+	auto obj_ptr = world_objects.get_by_raw_ptr(object);
+/*	if (!obj_ptr)
+	{
+		log("Object was purged.");
+		//return;
+	}
+*/
+//	log("Write one object: %s", object->get_PName(0).c_str());
 
 	if (GET_OBJ_VNUM(object) >= 0 && proto)
 	{
