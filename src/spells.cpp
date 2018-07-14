@@ -3937,6 +3937,7 @@ void init_ESpell_ITEM_NAMES()
 	ESpell_name_by_value[ESpell::SPELL_ARROWS_EARTH] = "SPELL_ARROWS_EARTH";
 	ESpell_name_by_value[ESpell::SPELL_ARROWS_AIR] = "SPELL_ARROWS_AIR";
 	ESpell_name_by_value[ESpell::SPELL_ARROWS_DEATH] = "SPELL_ARROWS_DEATH";
+	ESpell_name_by_value[ESpell::SPELL_GROUP_PROT_FROM_EVIL] = "SPELL_GROUP_PROT_FROM_EVIL";
 	ESpell_name_by_value[ESpell::SPELLS_COUNT] = "SPELLS_COUNT";
 
 	for (const auto& i : ESpell_name_by_value)
