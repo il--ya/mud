@@ -3441,6 +3441,7 @@ const spell_wear_off_msg_t spell_wear_off_msg =
 	"!SPELL ARROWS!",
 	"!SPELL ARROWS!",
 	"!SPELL ARROWS",
+	"Вы вновь ощущаете страх перед тьмой."
 };
 
 /**
