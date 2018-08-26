@@ -3120,7 +3120,9 @@ void extract_char(CHAR_DATA* ch, int clear_objs, bool zone_reset)
 	{
 //		log("[Extract char] All save for PC");
 		check_auction(ch, NULL);
-		ch->save_char();
+		// если чар в лд не перезаписываем - его уже посейвило
+		if (ch->desc)
+			ch->save_char();
 		//удаляются рент-файлы, если только персонаж не ушел в ренту
 		Crash_delete_crashfile(ch);
 	}
