@@ -2633,6 +2633,10 @@ void boot_db(void)
 	{
 		player_table[i].timer = NULL;
 		Crash_read_timer(i, FALSE);
+		CHAR_DATA *ch;
+		ch->load_char_ascii(player_table[i].name);
+		ch->set_hryvn(0);
+		ch->save_char();
 	}
 
 	// последовательность лоада кланов/досок не менять
