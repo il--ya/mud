@@ -4055,7 +4055,8 @@ char *matching_paren(char *p)
 void eval_expr(const char *line, char *result, void *go, SCRIPT_DATA * sc, TRIG_DATA * trig, int type)
 {
 	char expr[MAX_INPUT_LENGTH], *p;
-
+	sprintf(buf2, "Trig: %d\r\nLine: %s\r\n", GET_TRIG_VNUM(trig), line);
+	mudlog(buf2, BRF, -1, ERRLOG, TRUE);
 	while (*line && a_isspace(*line))
 	{
 		line++;
