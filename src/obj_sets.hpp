@@ -81,7 +81,7 @@ struct activ_sum
 {
 	activ_sum()
 	{
-		affects = clear_flags;
+		affects.clear();
 	};
 
 	// суммирование активаторов

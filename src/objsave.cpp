@@ -320,25 +320,25 @@ OBJ_DATA::shared_ptr read_one_object_new(char **data, int *error)
 			else if (!strcmp(read_line, "Affs"))
 			{
 				*error = 23;
-				object->set_affect_flags(clear_flags);
+				object->set_affect_flags(FLAG_DATA());
 				object->load_affect_flags(buffer);
 			}
 			else if (!strcmp(read_line, "Anti"))
 			{
 				*error = 24;
-				object->set_anti_flags(clear_flags);
+				object->set_anti_flags(FLAG_DATA());
 				object->load_anti_flags(buffer);
 			}
 			else if (!strcmp(read_line, "Nofl"))
 			{
 				*error = 25;
-				object->set_no_flags(clear_flags);
+				object->set_no_flags(FLAG_DATA());
 				object->load_no_flags(buffer);
 			}
 			else if (!strcmp(read_line, "Extr"))
 			{
 				*error = 26;
-				object->set_extra_flags(clear_flags);
+				object->set_extra_flags(FLAG_DATA());
 				object->load_extra_flags(buffer);
 			}
 			else if (!strcmp(read_line, "Wear"))
@@ -807,9 +807,9 @@ OBJ_DATA::shared_ptr read_one_object(char **data, int *error)
 	{
 		return object;
 	}
-	object->set_affect_flags(clear_flags);
-	object->set_anti_flags(clear_flags);
-	object->set_no_flags(clear_flags);
+	object->set_affect_flags(FLAG_DATA());
+	object->set_anti_flags(FLAG_DATA());
+	object->set_no_flags(FLAG_DATA());
 	object->load_affect_flags(f0);
 	object->load_anti_flags(f0);
 	object->load_no_flags(f0);
@@ -821,7 +821,7 @@ OBJ_DATA::shared_ptr read_one_object(char **data, int *error)
 		return object;
 	}
 	object->set_type(static_cast<OBJ_DATA::EObjectType>(t[0]));
-	object->set_extra_flags(clear_flags);
+	object->set_extra_flags(FLAG_DATA());
 	object->set_wear_flags(0);
 	object->load_extra_flags(f1);
 

@@ -54,7 +54,7 @@ struct activ_node
 {
 	activ_node() : skill(SKILL_INVALID, 0)
 	{
-		affects = clear_flags;
+		affects.clear();
 		prof.set();
 		enchant.first = 0;
 		npc = false;

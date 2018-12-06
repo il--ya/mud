@@ -265,8 +265,8 @@ struct activators_obj
 {
 	activators_obj()
 	{
-		native_no_flag = clear_flags;
-		native_affects = clear_flags;
+		native_no_flag.clear();
+		native_affects.clear();
 	};
 
 	// номер профы и ее суммарные активы

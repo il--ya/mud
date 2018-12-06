@@ -1424,7 +1424,7 @@ bool activ_sum::empty() const
 
 void activ_sum::clear()
 {
-	affects = clear_flags;
+	affects.clear();
 	apply.clear();
 	skills.clear();
 	bonus.phys_dmg = 0;

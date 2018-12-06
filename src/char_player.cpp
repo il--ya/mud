@@ -1251,13 +1251,6 @@ int Player::load_char_ascii(const char *name, bool reboot, const bool find_id /*
 		GET_SPELL_MEM(this, i) = 0;
 
 	char_specials.saved.active_affects.clear();
-	for (auto a = 0; a != MAX_AFFECT; ++a)
-	{
-		if (clear_flags.get(a))
-		{
-			set_affect(static_cast<EAffectFlag>(i));
-		}
-	}
 
 	POOFIN(this) = NULL;
 	POOFOUT(this) = NULL;

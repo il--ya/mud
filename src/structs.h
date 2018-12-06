@@ -1326,8 +1326,6 @@ inline FLAG_DATA& FLAG_DATA::operator+=(const FLAG_DATA &r)
 	return *this;
 }
 
-extern const FLAG_DATA clear_flags;
-
 class unique_bit_flag_data : public FLAG_DATA
 {
 public:
@@ -1336,7 +1334,7 @@ public:
 	bool operator<(const unique_bit_flag_data& r) const;
 	bool operator>(const unique_bit_flag_data& r) const;
 
-	unique_bit_flag_data() : FLAG_DATA(clear_flags) {}
+	unique_bit_flag_data() {}
 	unique_bit_flag_data(const FLAG_DATA& __base): FLAG_DATA(__base) {}
 };
 

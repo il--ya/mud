@@ -480,7 +480,7 @@ class activation
 	CObjectPrototype::skills_t skills;
 
 public:
-	activation() : affects(clear_flags), weight(-1), ndices(-1), nsides(-1) {}
+	activation() : weight(-1), ndices(-1), nsides(-1) {}
 
 	activation(const std::string& __actmsg, const std::string& __deactmsg,
 			   const std::string& __room_actmsg, const std::string& __room_deactmsg,

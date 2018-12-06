@@ -50,7 +50,7 @@ namespace PrintActivators
 // суммарные активы для одной профы
 struct clss_activ_node
 {
-	clss_activ_node() { total_affects = clear_flags; };
+	clss_activ_node() { total_affects.clear(); };
 
 	// аффекты
 	FLAG_DATA total_affects;

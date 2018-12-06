@@ -155,8 +155,6 @@ TIME_INFO_DATA time_info;	// the infomation about the time
 struct weather_data weather_info;	// the infomation about the weather
 struct reset_q_type reset_q;	// queue of zones to be reset
 
-const FLAG_DATA clear_flags;
-
 struct portals_list_type *portals_list;	// Список проталов для townportal
 
 extern int number_of_social_messages;
@@ -1868,7 +1866,7 @@ void OBJ_DATA::init_set_table()
 					continue;
 				}
 
-				FLAG_DATA tmpaffs = clear_flags;
+				FLAG_DATA tmpaffs;
 				tmpaffs.from_string(cppstr.c_str());
 
 				clss->second.set_affects(tmpaffs);

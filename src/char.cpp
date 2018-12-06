@@ -238,7 +238,7 @@ void CHAR_DATA::reset()
 	next_fighting = NULL;
 	set_protecting(0);
 	set_touching(0);
-	BattleAffects = clear_flags;
+	BattleAffects.clear();
 	Poisoner = 0;
 	set_fighting(0);
 	char_specials.position = POS_STANDING;
@@ -2419,11 +2419,6 @@ void CHAR_DATA::update_active_affects()
 
 			// Restore values for NPC - added by Adept
 			add_abils = (&mob_proto[GET_MOB_RNUM(this)])->add_abils;
-		}
-		else
-		{
-			// PC's clear all affects, because recalc one
-			m_affected_by += clear_flags;
 		}
 	}
 
